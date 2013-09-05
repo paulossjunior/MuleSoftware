@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:facebook="http://www.mulesoft.org/schema/mule/facebook" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/facebook http://www.mulesoft.org/schema/mule/facebook/2.0/mule-facebook.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd">
+    <facebook:config-with-oauth name="FacebookConnector" appId="475538755875846" appSecret="3483351a80c565a385ad1c56f699aa3e" doc:name="Facebook" scope="user_photos">
+        <facebook:oauth-callback-config domain="localhost" localPort="8081" remotePort="8081"/>
+    </facebook:config-with-oauth>
+    <flow name="Authorize" doc:name="Authorize">
+        <http:inbound-endpoint exchange-pattern="request-response" host="localhost" port="8082" doc:name="HTTP"/>
+        <facebook:authorize config-ref="FacebookConnector" doc:name="Authorize"/>
+        <set-session-variable variableName="accessTokenId" value="#[flowVars['OAuthAccessTokenId']]" doc:name="SessionVariable"/>
+        <flow-ref name="PhotoDownload" doc:name="PhotoDownload"/>
+    </flow>
+    <flow name="PhotoDownload" doc:name="PhotoDownload">
+        <http:inbound-endpoint exchange-pattern="request-response" host="localhost" port="8081" doc:name="HTTP"/>
+        <facebook:get-user-picture config-ref="FacebookConnector" user="me" accessTokenId="#[sessionVars['accessTokenId']]" doc:name="Get Profile Picture"/>
+        <file:outbound-endpoint path="/Users/Paulo/Desktop/Mule/face" responseTimeout="10000" doc:name="Save the picture" outputPattern="foto.jpg"/>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+    </flow>
+</mule>

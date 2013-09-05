@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:facebook="http://www.mulesoft.org/schema/mule/facebook" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:twitter="http://www.mulesoft.org/schema/mule/twitter" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/twitter http://www.mulesoft.org/schema/mule/twitter/2.4/mule-twitter.xsd
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
+http://www.mulesoft.org/schema/mule/facebook http://www.mulesoft.org/schema/mule/facebook/2.0/mule-facebook.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
+    <twitter:config name="TwitterConnector" accessKey="194211365-2opLw6BibC0QSOxCFPzGxfC0kkyTw69J5ey0ZQ4C" accessSecret="Nxqro9fthSaHqyL3BJd9NjegzxjL5hsygoNTxFXXHU" consumerKey="rPfw788aLcHLQR1e3P5pWQ" consumerSecret="itcuAcvn8tPLME4r718LG1D3Fomm3O7Dbb4MekfEc" doc:name="Twitter">
+        <twitter:connection-pooling-profile initialisationPolicy="INITIALISE_ONE" exhaustedAction="WHEN_EXHAUSTED_GROW"/>
+    </twitter:config>
+    <flow name="TwiiterExampleFlow1" doc:name="TwiiterExampleFlow1">
+        <http:inbound-endpoint exchange-pattern="request-response" host="localhost" port="8081" doc:name="HTTP" path="addtweet"/>
+        <twitter:update-status config-ref="TwitterConnector"      doc:name="UpdateStatus" status="#[header:INBOUND:mymessage]"/>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+    </flow>
+    <flow name="TwiiterExampleFlow2" doc:name="TwiiterExampleFlow2">
+        <http:inbound-endpoint exchange-pattern="request-response" host="localhost" port="8081" path="gettimeline" doc:name="HTTP"/>
+        <twitter:get-home-timeline config-ref="TwitterConnector" doc:name="GetHomeTimeLine"/>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+    </flow>
+    <flow name="TwiiterExampleFlow3" doc:name="TwiiterExampleFlow3">
+        <http:inbound-endpoint exchange-pattern="request-response" host="localhost" port="8081" path="dm" doc:name="HTTP"/>
+        <twitter:send-direct-message-by-screen-name config-ref="TwitterConnector" message="#[header:INBOUND:mymessage]" screenName="#[header:INBOUND:person]" doc:name="DirectMessage"/>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+    </flow>
+</mule>
